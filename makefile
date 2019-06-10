@@ -1,7 +1,7 @@
 CXX=g++
 CXXFLAGS=-std=c++17
 
-all: sock socketshell
+all: socketshell
 
 # sock: sock.cpp strutils.cpp strutils.h
 # 	$(CXX) -o sock sock.cpp strutils.cpp

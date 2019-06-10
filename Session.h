@@ -4,16 +4,13 @@
 #include <queue>
 #include <string>
 
-using namespace std;
-
-
 class Session {
   private:
     static const int BUFFER_SIZE = 1024;
     bool isClosed;
     int sessionFD;
-    queue<string> linesIn;
-    string usrid;
+    std::queue<std::string> linesIn;
+    std::string usrid;
   public:
     /**
      * Creates a new Session object that will listen on the given file descriptor
@@ -32,17 +29,17 @@ class Session {
     bool getIsClosed();
     bool getIsDone();
 
-    string getUsrID();
-    bool setUsrID(string usrid);
+    std::string getUsrID();
+    bool setUsrID(std::string usrid);
 
     // #######################################################################
     // #####                   END GETTERS AND SETTERS                   #####
     // #######################################################################
 
     int numQueuedLines();
-    void pushRequest(string request);
-    string readLine();
-    void sendMessage(string message);
+    void pushRequest(std::string request);
+    std::string readLine();
+    void sendMessage(std::string message);
 };
 
 #endif

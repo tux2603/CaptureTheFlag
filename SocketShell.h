@@ -15,8 +15,6 @@
 #include "Session.h"
 #include "Scheduler.h"
 
-using namespace std;
-
 class SocketShell : public DummyShell {
   private:
     int port, /// The port that the socket will listen for connections on
@@ -32,17 +30,17 @@ class SocketShell : public DummyShell {
     ///   - string argv[]:      The arguments to the lambda
     ///   - SocketShell *shell: The SocketShell object that is invoking the lambda
     ///   - Session *session:   The session that made the request that caused the lambda to be invoked
-    map<string, function<string(int, string[], SocketShell*, Session*)>> commandDictionary;
+    std::map<std::string, std::function<std::string(int, std::string[], SocketShell*, Session*)>> commandDictionary;
 
     Scheduler scheduler;
 
     // TODO ############################################################# TODO
     // TODO                 Replace this with a scheduler                 TODO
     // TODO ############################################################# TODO
-    set<Session*> sessions;
+    std::set<Session*> sessions;
 
     /// A thread that will continually check for new connection requests on the socket
-    thread sessionCheckThread;
+    std::thread sessionCheckThread;
 
   public:
     /**
@@ -65,7 +63,7 @@ class SocketShell : public DummyShell {
      * Creates a new shell-like object that will listen on a TCP socket for
      *  commands to execute, with a specified port and prompt.
      */
-    SocketShell(int port, string prompt);
+    SocketShell(int port, std::string prompt);
 
     // TODO ############################################################# TODO
     // TODO                        Add destructors                        TODO
@@ -76,7 +74,7 @@ class SocketShell : public DummyShell {
      * @returns A std::set<Session*> object containing all of the sessions 
      *  that are currently connected
      */
-    set<Session*> getSessions();
+    std::set<Session*> getSessions();
 
     /**
      * Gets the port that the SocketShell object is listening on
@@ -90,7 +88,7 @@ class SocketShell : public DummyShell {
      * @param lambda A lambda of type function<string(int, string[], SocketShell*, Session*)> 
      *  that will be executed when the given command is invoked.
      */
-    void addCommand(string name, function<string(int, string[], SocketShell*, Session*)> lambda);
+    void addCommand(std::string name, std::function<std::string(int, std::string[], SocketShell*, Session*)> lambda);
     
     /**
      * Triggers a single update cycle on the SocketShell object. This will poll

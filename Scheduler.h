@@ -10,13 +10,11 @@
 #include <thread>
 #include "Session.h"
 
-using namespace std;
-
 // A simple data structure to store the pertinent information to a single request
 struct request
 {
   Session *session;
-  string text;
+  std::string text;
 };
 
 class Scheduler
@@ -29,22 +27,22 @@ class Scheduler
         the resources */
 private:
   /// Stores futures that monitor requests coming in from the various sessions
-  map<Session *, future<string> *> sessionMonitors;
+  std::map<Session *, std::future<std::string> *> sessionMonitors;
 
   /// Lock objects to try to keep the various threads working nicely together
-  mutex queueLock;
-  mutex sessionLock;
+  std::mutex futureLock;
+  std::mutex sessionLock;
 
   /// Stores the requests that come in in order of assigned importance
-  queue<request> requests;
+  std::queue<request> requests;
 
   /// Stores all the sessions that the scheduler will handle requests from
-  set<Session *> sessions;
+  std::set<Session *> sessions;
 
   /// The thread that will perform the scheduling stuff and manage the queue
-  thread schedulerThread;
+  std::thread schedulerThread;
 
-  atomic<bool> shouldExit;
+  std::atomic<bool> shouldExit;
 
 public:
   Scheduler();
@@ -54,12 +52,12 @@ public:
   /**
    * Gets a list of active sessions that the scheduler is listening to.
    */
-  set<Session *> getSessions();
+  std::set<Session *> getSessions();
 
   /**
    * Gets the top request on the queue
    */
-  string getNextRequest();
+  std::string getNextRequest();
 };
 
 #endif

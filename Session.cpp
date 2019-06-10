@@ -12,9 +12,15 @@
 
 using namespace std;
 
-Session::Session(int sessionFD) : sessionFD(sessionFD), isClosed(false)
+int Session::uniqueID = 0;
+
+Session::Session(int sessionFD, string prompt) : sessionFD(sessionFD), isClosed(false), prompt(prompt)
 {
-  cout << "Creating new session" << endl;
+  id = uniqueID++;
+
+  cout << "Creating new session (ID=" << id << ")" << endl;
+
+  send(sessionFD, prompt.c_str(), prompt.length(), 0);
 }
 
 // On destruction of the session object
@@ -40,19 +46,19 @@ Session::~Session()
   cout << "Session " << sessionFD << " destroyed!" << endl;
 }
 
+int Session::getID() { return id; }
+
 int Session::getSessionFD() { return sessionFD; }
 
 bool Session::getIsClosed() { return isClosed; }
 bool Session::getIsDone() {return isClosed && linesIn.empty(); }
 
-string Session::getUsrID()
-{
-  return usrid;
+string Session::getPrompt() {
+  return prompt;
 }
 
-void Session::setUsrID(string usrid) 
-{
-  this->usrid = usrid;
+void Session::setPrompt(string prompt) {
+  this->prompt = prompt;
 }
 
 int Session::numQueuedLines()
@@ -130,4 +136,5 @@ string Session::readLine()
 void Session::sendMessage(string message)
 {
   send(sessionFD, message.c_str(), message.length(), 0);
+  send(sessionFD, prompt.c_str(), prompt.length(), 0);
 }

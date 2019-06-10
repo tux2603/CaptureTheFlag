@@ -9,8 +9,6 @@
 #include "SocketShell.h"
 #include "strutils.h"
 
-#define DEBUG
-
 using namespace std;
 
 SocketShell::SocketShell() : SocketShell::SocketShell(8042) {}
@@ -44,7 +42,7 @@ SocketShell::SocketShell(int port, string prompt) : port(port)
     throw "Could not listen on socket";
 
   // Start a thread that will continually check for new connections
-  sessionCheckThread = thread([](int socketFD, struct sockaddr *sockAddr, socklen_t *addrLen, set<Session *> *sessions, Scheduler *scheduler) {
+  sessionCheckThread = thread([](int socketFD, struct sockaddr *sockAddr, socklen_t *addrLen, Scheduler *scheduler, string defaultPrompt) {
     cout << "Session checking thread started" << endl;
 
     while (true)
@@ -59,19 +57,18 @@ SocketShell::SocketShell(int port, string prompt) : port(port)
         // !!!!!                  POSSIBLE MEMORY LEAK                   !!!!!
         // !!!!! ####################################################### !!!!!
         // Create a new session object to handle the session
-        Session *sessionObject = new Session(sessionFD);
+        Session *sessionObject = new Session(sessionFD, defaultPrompt);
 
         // Add the session to the list
         scheduler->addSession(sessionObject);
       }
     }
-  },
-                              socketFD, (struct sockaddr *)&address, (socklen_t *)&addrLen, &sessions, &scheduler);
+  }, socketFD, (struct sockaddr *)&address, (socklen_t *)&addrLen, &scheduler, prompt);
 }
 
 set<Session *> SocketShell::getSessions()
 {
-  return sessions;
+  return scheduler.getSessions();
 }
 
 int SocketShell::getPort()
@@ -86,43 +83,50 @@ void SocketShell::addCommand(string name, function<string(int, string[], SocketS
 
 void SocketShell::update()
 {
-  // TODO ############################################################### TODO
-  // TODO    find a way to flush each sessions queue in an 'fair' way     TODO
-  // TODO ############################################################### TODO
-  for (auto session : sessions)
-  {
-    int numlinesIn = session->numQueuedLines();
+  if(scheduler.hasRequest()) {
+    cout << "Got a request" << endl;
+    Request r = scheduler.getNextRequest();
+    cout << "Session ID: " << r.sessionID << "\t Request text: " << r.text << endl;
 
-    if (numlinesIn > 0 || true)
-    {
-      string request = session->readLine();
-
-      if(request.length() > 0) {
-        cout << "Got request " << request << flush;
-
-        // Break the request into tokens
-        int argc = countWords(request);
-        string *argv = getWords(request);
-        string message = "";
-
-        if (argc > 0)
-        {
-          if (commandDictionary.count(argv[0]))
-          {
-            message = commandDictionary.at(argv[0])(argc, argv, this, session);
-          }
-
-          else
-          {
-            message = argv[0] + ": command not found. Type `help' for a list of available commands";
-          }
-        }
-
-        session->sendMessage(message + "\n");
-
-        delete [] argv;
-      }
+    // Make sure that the session still exists
+    if(scheduler.getSessionByID(r.sessionID) == NULL) {
+      cout << " ...but that session is no longer here. Oh well" << endl;
     }
+
+    else {
+      // If the session does still exist, split the request into tokens
+      int argc = countWords(r.text);
+      string *argv = getWords(r.text);
+
+      string message = "";
+
+      // Execute the command (if we got one...)
+      if (argc > 0)
+      {
+        // If the command is in the dictionary, execute it
+        if (commandDictionary.count(argv[0]))
+          message = commandDictionary.at(argv[0])(argc, argv, this, scheduler.getSessionByID(r.sessionID));
+
+        //If the command wasn't in the dictionary, give an error message
+        else
+          message = argv[0] + ": command not found. Type `help' for a list of available commands";
+      }
+
+      // If no command was given, give an error message
+      else 
+        message = "No command given. Type `help' for a list of available commands";
+
+      // Send the return message to the session
+      scheduler.getSessionByID(r.sessionID)->sendMessage(message + "\n");
+
+      // So as to have no memory leaks
+      delete [] argv;
+    }
+  }
+
+  else {
+    // TODO Magic number
+    this_thread::sleep_for(chrono::milliseconds(10));
   }
 }
 
@@ -130,12 +134,15 @@ void SocketShell::update()
 // #####                          BEGIN TEST BED                         #####
 // ###########################################################################
 
+#define TESTBED
+#ifdef TESTBED
+
 int main()
 {
   SocketShell *s1 = new SocketShell();
 
   s1->addCommand("wall", [](int argc, string argv[], SocketShell *s, Session *c) -> string {
-    string message = c->getUsrID() + ": ";
+    string message = c->getID() + ": ";
 
     for (int i = 1; i < argc; i++)
     {
@@ -152,14 +159,14 @@ int main()
     return "";
   });
 
-  cout << s1->getPrompt() << endl
-       << s1->getPort() << endl;
+  cout << "SocketShell up and running, and waiting for connections." << endl;
 
   while (true)
   {
-    this_thread::sleep_for(chrono::milliseconds(100));
-    //s1->update();
+    s1->update();
   }
 
   return 0;
 }
+
+#endif

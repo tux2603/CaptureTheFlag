@@ -34,11 +34,6 @@ class SocketShell : public DummyShell {
 
     Scheduler scheduler;
 
-    // TODO ############################################################# TODO
-    // TODO                 Replace this with a scheduler                 TODO
-    // TODO ############################################################# TODO
-    std::set<Session*> sessions;
-
     /// A thread that will continually check for new connection requests on the socket
     std::thread sessionCheckThread;
 

@@ -7,16 +7,18 @@
 class Session {
   private:
     static const int BUFFER_SIZE = 1024;
+    static int uniqueID;
+    int id;
     bool isClosed;
+    std::string prompt;
     int sessionFD;
     std::queue<std::string> linesIn;
-    std::string usrid;
   public:
     /**
      * Creates a new Session object that will listen on the given file descriptor
      * @param socketFD The file descriptor of the Session socket to listen to
      */
-    Session(int sessionFD);
+    Session(int sessionFD, std::string prompt);
 
     ~Session();
 
@@ -24,13 +26,14 @@ class Session {
     // #####                  BEGIN GETTERS AND SETTERS                  #####
     // #######################################################################
 
+    int getID();
     int getSessionFD();
 
     bool getIsClosed();
     bool getIsDone();
 
-    std::string getUsrID();
-    void setUsrID(std::string usrid);
+    void setPrompt(std::string);
+    std::string getPrompt();
 
     // #######################################################################
     // #####                   END GETTERS AND SETTERS                   #####

@@ -17,8 +17,10 @@ The capture the flag program will work by starting a "referee" program listening
 
 This should simply be a matter of running `make` in the project directory. Currently, this builds a 
   test bed called `socketshell` that will start a simplified version of the referee program that will
-  listen on port 8042 and log all messages that come in over the socket. IN the near future, a few simple
-  commands will be added.
+  listen on port 8042, log all requests that come in over the socket, and execute them. 
+
+Currently, the following commands are available:
+ - `wall [_message_]` - send `[_message_]` to all connected sessions
 
 So far, this has only been tested on a system running Linux Mint 19 and a virtual machine running Lubuntu 19.04. Most Linux distros and
   Mac _should_ work, but Windows<sup>™©®☣§℠℗</sup> is not guaranteed to work, since various UNIX system calls are used.

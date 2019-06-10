@@ -3,8 +3,8 @@ CXXFLAGS=-std=c++17
 
 all: sock socketshell
 
-sock: sock.cpp strutils.cpp strutils.h
-	$(CXX) -o sock sock.cpp strutils.cpp
+# sock: sock.cpp strutils.cpp strutils.h
+# 	$(CXX) -o sock sock.cpp strutils.cpp
 
 # dummyshell: DummyShell.* strutils.*
 # 	$(CXX) -o dummyshell DummyShell.cpp strutils.cpp

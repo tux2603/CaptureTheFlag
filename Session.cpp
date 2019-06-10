@@ -47,9 +47,12 @@ bool Session::getIsDone() {return isClosed && linesIn.empty(); }
 
 string Session::getUsrID()
 {
-  stringstream ss;
-  ss << this;
-  return ss.str();
+  return usrid;
+}
+
+void Session::setUsrID(string usrid) 
+{
+  this->usrid = usrid;
 }
 
 int Session::numQueuedLines()

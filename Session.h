@@ -30,7 +30,7 @@ class Session {
     bool getIsDone();
 
     std::string getUsrID();
-    bool setUsrID(std::string usrid);
+    void setUsrID(std::string usrid);
 
     // #######################################################################
     // #####                   END GETTERS AND SETTERS                   #####

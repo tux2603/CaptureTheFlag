@@ -24,11 +24,11 @@ Session::~Session()
   while(!linesIn.empty()) {
     linesIn.pop();
   }
-  linesIn.~queue();
   
   // Send a message to whatever is connected to the socket so that it knows what happened
   char *message = (char *)"Your session was destroyed\n";
   send(sessionFD, message, strlen(message), 0);
+  
 
   // Close the file descriptor associated with the session
   close(sessionFD);

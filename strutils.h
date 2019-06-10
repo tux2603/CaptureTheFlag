@@ -1,6 +1,6 @@
 #include <string>
 
-// Counts the nuber of words in str
+// Counts the number of words in str
 int countWords(char *str);
 int countWords(std::string str);
 

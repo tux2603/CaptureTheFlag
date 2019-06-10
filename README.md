@@ -20,7 +20,7 @@ This should simply be a matter of running `make` in the project directory. Curre
   listen on port 8042, log all requests that come in over the socket, and execute them. 
 
 Currently, the following commands are available:
- - `wall [_message_]` - send `[_message_]` to all connected sessions
+ - `wall [message]` - send `[message]` to all connected sessions
 
 So far, this has only been tested on a system running Linux Mint 19 and a virtual machine running Lubuntu 19.04. Most Linux distros and
   Mac _should_ work, but Windows<sup>™©®☣§℠℗</sup> is not guaranteed to work, since various UNIX system calls are used.

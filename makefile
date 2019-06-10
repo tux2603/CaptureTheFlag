@@ -9,5 +9,5 @@ all: socketshell
 # dummyshell: DummyShell.* strutils.*
 # 	$(CXX) -o dummyshell DummyShell.cpp strutils.cpp
 
-socketshell: SocketShell.* Scheduler.* Session.* DummyShell.* strutils.* 
+socketshell: SocketShell.* Scheduler.* Session.* strutils.* 
 	$(CXX) -o $@ $^ -pthread

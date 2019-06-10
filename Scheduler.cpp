@@ -69,7 +69,6 @@ Scheduler::Scheduler()
           if (status == future_status::ready)
           {
             string message = i.second->get();
-            cout << i.first << ": " << message << endl;
 
             // If there was some text, add it to the list of requests.
             if(message.length() > 0) {

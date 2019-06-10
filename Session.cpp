@@ -20,7 +20,7 @@ Session::Session(int sessionFD, string prompt) : sessionFD(sessionFD), isClosed(
 
   cout << "Creating new session (ID=" << id << ")" << endl;
 
-  send(sessionFD, prompt.c_str(), prompt.length(), 0);
+  sendPrompt();
 }
 
 // On destruction of the session object
@@ -136,5 +136,8 @@ string Session::readLine()
 void Session::sendMessage(string message)
 {
   send(sessionFD, message.c_str(), message.length(), 0);
+}
+
+void Session::sendPrompt() {
   send(sessionFD, prompt.c_str(), prompt.length(), 0);
 }

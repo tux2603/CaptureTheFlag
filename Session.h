@@ -43,6 +43,7 @@ class Session {
     void pushRequest(std::string request);
     std::string readLine();
     void sendMessage(std::string message);
+    void sendPrompt();
 };
 
 #endif

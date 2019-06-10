@@ -15,11 +15,8 @@ SocketShell::SocketShell() : SocketShell::SocketShell(8042) {}
 
 SocketShell::SocketShell(int port) : SocketShell::SocketShell(port, "socketshell@" + to_string(port) + "$ ") {}
 
-SocketShell::SocketShell(int port, string prompt) : port(port)
+SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt)
 {
-  // Set the prompt. For some reason it doesn't like being set with the variable initializers
-  this->prompt = prompt;
-
   // Try to create a file descriptor for the socket
   if ((socketFD = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     throw "Could not create a file descriptor for the socket";
@@ -76,9 +73,29 @@ int SocketShell::getPort()
   return port;
 }
 
+string SocketShell::getPrompt()
+{
+  return prompt;
+}
+
+void SocketShell::setPrompt(string p)
+{
+  prompt = p;
+}
+
 void SocketShell::addCommand(string name, function<string(int, string[], SocketShell *, Session *)> lambda)
 {
   commandDictionary.insert(pair<string, function<string(int, string[], SocketShell *, Session *)>>(name, lambda));
+}
+
+set<string> SocketShell::listCommands() {
+  set<string> commandsSet = set<string>();
+
+  for (pair<string, function<string(int, string[], SocketShell *, Session *)>> const& commandPair : commandDictionary) {
+    commandsSet.insert(commandPair.first);
+  }
+
+  return commandsSet;
 }
 
 void SocketShell::update()
@@ -118,6 +135,7 @@ void SocketShell::update()
 
       // Send the return message to the session
       scheduler.getSessionByID(r.sessionID)->sendMessage(message + "\n");
+      scheduler.getSessionByID(r.sessionID)->sendPrompt();
 
       // So as to have no memory leaks
       delete [] argv;
@@ -141,19 +159,22 @@ int main()
 {
   SocketShell *s1 = new SocketShell();
 
-  s1->addCommand("wall", [](int argc, string argv[], SocketShell *s, Session *c) -> string {
-    string message = c->getID() + ": ";
+  s1->addCommand("wall", [](int argc, string argv[], SocketShell *shell, Session *callingSession) -> string {
+    string message = "\n" + to_string(callingSession->getID()) + ": ";
 
     for (int i = 1; i < argc; i++)
     {
       message += argv[i] + " ";
     }
 
-    set<Session *> sessions = s->getSessions();
+    set<Session *> sessions = shell->getSessions();
 
     for (Session *session : sessions)
     {
-      session->sendMessage(message + "\n");
+      if(session->getID() != callingSession->getID()) {
+        session->sendMessage(message + "\n");
+        session->sendPrompt();
+      }
     }
 
     return "";

@@ -23,6 +23,14 @@ Session::Session(int sessionFD, string prompt) : sessionFD(sessionFD), isClosed(
   sendPrompt();
 }
 
+Session::Session(const Session &toCopy) {
+  id = toCopy.id;
+  isClosed = toCopy.isClosed;
+  prompt = toCopy.prompt;
+  sessionFD = toCopy.sessionFD;
+  linesIn = toCopy.linesIn;
+}
+
 // On destruction of the session object
 Session::~Session()
 {

@@ -20,6 +20,13 @@ class Session {
      */
     Session(int sessionFD, std::string prompt);
 
+    /**
+     * Copy constructor for the Session class. Creates a new Session object
+     *  that is a copy of the old one
+     * @param toCopy The session to be copied
+     */
+    Session(const Session &toCopy);
+
     ~Session();
 
     // #######################################################################

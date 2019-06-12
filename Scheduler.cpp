@@ -18,12 +18,6 @@ Scheduler::Scheduler()
   schedulerThread = thread([](Scheduler *s) {
     while (!s->shouldExit.load())
     {
-      // Make sure that all the connections have a future in the future list, and that all closed connections are removed
-      // Acquire a lock to make sure that other threads won't modify the set while it is being operated on
-      lock_guard<mutex> sessionGaurd(s->sessionLock);
-
-      vector<int> toRemove;
-
       // If there are no sessions connected, simply sit and wait for a bit so that the thread doesn't
       //  gobble CPU time
       if (s->sessions.size() < 1)
@@ -32,6 +26,8 @@ Scheduler::Scheduler()
       // Else, there are sessions connected, so perform the necessary logic to handle them
       else
       {
+        vector<int> toRemove;
+
         for (pair<int, Session *> const& i : s->sessions)
         {
           // If the session has stopped, remove it from the set
@@ -50,12 +46,18 @@ Scheduler::Scheduler()
         }
 
         // Remove all sessions that were marked for deletion in the previous loop
-        for (int id : toRemove)
         {
-          Session *session = s->sessions[id];
-          s->sessions.erase(id);
-          s->sessionMonitors.erase(id);
-          delete session;
+          // Make sure that all the connections have a future in the future list, and that all closed connections are removed
+          // Acquire a lock to make sure that other threads won't modify the set while it is being operated on
+          lock_guard<mutex> sessionGaurd(s->sessionLock);
+
+          for (int id : toRemove)
+          {
+            Session *session = s->sessions[id];
+            s->sessions.erase(id);
+            s->sessionMonitors.erase(id);
+            delete session;
+          }
         }
 
         // Clear the list of sessions to be removed
@@ -100,6 +102,7 @@ Scheduler::Scheduler()
 }
 
 set<Session *> Scheduler::getSessions() {
+  // Create a copy of the sessions list. Otherwise some nasty thread somewhere could cause a problem...
   set<Session *> sessionSet;
   for(pair<int, Session *> const& i : sessions) sessionSet.insert(i.second);
   return sessionSet;
@@ -109,11 +112,12 @@ Session *Scheduler::getSessionByID(int id) {
   // If there is no such session with that ID, return null
   if(sessions.count(id) < 1) return NULL;
 
-  return sessions[id];
+  return sessions.at(id);
 }
 
 void Scheduler::addSession(Session *session)
 {
+  lock_guard<mutex> sessionGaurd(sessionLock);
   sessions.insert(pair<int, Session *>(session->getID(), session));
 }
 

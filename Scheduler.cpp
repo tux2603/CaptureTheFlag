@@ -1,3 +1,7 @@
+// TODO ################################################################# TODO
+// TODO             Add destructor to wait for thread to join             TODO
+// TODO ################################################################# TODO
+
 #include <chrono>
 #include <functional>
 #include <future>
@@ -99,6 +103,13 @@ Scheduler::Scheduler()
       }
     }
   }, this);
+}
+
+Scheduler::~Scheduler() {
+  shouldExit = true;
+  cout << "Waiting for request scheduler to stop..." << endl;
+  schedulerThread.join();
+  cout << "Scheduler has joined" << endl;
 }
 
 set<Session *> Scheduler::getSessions() {

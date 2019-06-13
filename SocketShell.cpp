@@ -3,7 +3,14 @@
   AUTHOR: Owen O'Connor
 */
 
+// TODO ################################################################# TODO
+// TODO     Add destructor of some sort that waits for the connection     TODO
+// TODO                      checking thread to join                      TODO
+// TODO ################################################################# TODO
+
+#include <atomic>
 #include <iostream>
+#include <unistd.h>
 #include "Scheduler.h"
 #include "Session.h"
 #include "SocketShell.h"
@@ -15,7 +22,7 @@ SocketShell::SocketShell() : SocketShell::SocketShell(8042) {}
 
 SocketShell::SocketShell(int port) : SocketShell::SocketShell(port, "socketshell@" + to_string(port) + "$ ") {}
 
-SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt)
+SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt), shouldExit(false)
 {
   // Try to create a file descriptor for the socket
   if ((socketFD = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -42,10 +49,10 @@ SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt)
     throw "Could not listen on socket";
 
   // Start a thread that will continually check for new connections
-  sessionCheckThread = thread([](int socketFD, struct sockaddr *sockAddr, socklen_t *addrLen, Scheduler *scheduler, string defaultPrompt) {
+  sessionCheckThread = thread([](int socketFD, struct sockaddr *sockAddr, socklen_t *addrLen, Scheduler *scheduler, string defaultPrompt, atomic<bool> *shouldExit) {
     cout << "Session checking thread started" << endl;
 
-    while (true)
+    while (!shouldExit->load())
     {
       // Wait for a new connection request to come in on the socket
       int sessionFD = accept(socketFD, sockAddr, addrLen);
@@ -63,7 +70,15 @@ SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt)
         scheduler->addSession(sessionObject);
       }
     }
-  }, socketFD, (struct sockaddr *)&address, (socklen_t *)&addrLen, &scheduler, prompt);
+  }, socketFD, (struct sockaddr *)&address, (socklen_t *)&addrLen, &scheduler, prompt, &shouldExit);
+}
+
+SocketShell::~SocketShell() {
+  shouldExit = true;
+  close(socketFD);
+  cout << "Waiting for socket listener to stop..." << endl;
+  sessionCheckThread.join();
+  cout << "Socket has joined" << endl;
 }
 
 set<Session *> SocketShell::getSessions()
@@ -159,7 +174,7 @@ void SocketShell::update()
 // #####                          BEGIN TEST BED                         #####
 // ###########################################################################
 
-#define TESTBED
+//#define TESTBED
 #ifdef TESTBED
 
 int main()
@@ -176,7 +191,7 @@ int main()
     }
 
     if(argc >= 5 && !argv[1].compare("help") && !argv[2].compare("help") && !argv[3].compare("help") && !argv[4].compare("help")) {
-      message = "\nA friendly message from the local cow:\n";
+      message = "\nA friendly message from the local neighborhood cow:\n";
       message += " ________________________________ \n";
       message += "< THERE SHALL BE NO HELP FOR YOU >\n";
       message += " -------------------------------- \n";                                                            

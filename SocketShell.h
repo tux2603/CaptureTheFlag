@@ -6,6 +6,7 @@
   AUTHOR: Owen O'Connor
 */
 
+#include <atomic>
 #include <functional>
 #include <map>
 #include <netinet/in.h>
@@ -20,7 +21,7 @@ class SocketShell {
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~ BASIC SHELL STUFF ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    bool shellHasExited;
+    std::atomic<bool> shouldExit;
     std::string prompt; 
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SOCKET STUFF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,9 +70,7 @@ class SocketShell {
      */
     SocketShell(int port, std::string prompt);
 
-    // TODO ############################################################# TODO
-    // TODO                        Add destructors                        TODO
-    // TODO ############################################################# TODO
+    ~SocketShell();
     
     /**
      * Gets a set of sessions that are connected to the SocketShell object

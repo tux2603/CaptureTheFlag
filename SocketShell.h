@@ -80,6 +80,8 @@ class SocketShell {
      */
     std::set<Session*> getSessions();
 
+    Session *getSessionByID(int id);
+
     /**
      * Gets the port that the SocketShell object is listening on
      * @returns The numeric identity of the TCP port

@@ -12,7 +12,7 @@
 
 using namespace std;
 
-int Session::uniqueID = 0;
+int Session::uniqueID = 1;
 
 Session::Session(int sessionFD, string prompt) : sessionFD(sessionFD), isClosed(false), prompt(prompt)
 {
@@ -60,6 +60,9 @@ int Session::getSessionFD() { return sessionFD; }
 
 bool Session::getIsClosed() { return isClosed; }
 bool Session::getIsDone() {return isClosed && linesIn.empty(); }
+
+string Session::getName() { return name; }
+void Session::setName(string name) { this->name = name; }
 
 string Session::getPrompt() {
   return prompt;

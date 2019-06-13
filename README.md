@@ -20,7 +20,13 @@ This should simply be a matter of running `make` in the project directory. Curre
   listen on port 8042, log all requests that come in over the socket, and execute them. 
 
 Currently, the following commands are available:
+ - `help` - prints a list of all available commands
+ - `setName [name]` - sets the nickname of the session to `name`. This will be displayed when messages
+  are sent to other sessions.
+ - `setPrompt [prompt]` - sets the prompt that will be displayed in the terminal. This is mostly useful
+  for when humans would be using the session in a terminal.
  - `wall [message]` - send `[message]` to all connected sessions
+ - `write [integer] [message]` - send `[message]` to the session with id `[integer]`
 
 So far, this has only been tested on a system running Linux Mint 19 and a virtual machine running Lubuntu 19.04. Most Linux distros and
   Mac _should_ work, but Windows<sup>™©®☣§℠℗</sup> is not guaranteed to work, since various UNIX system calls are used.

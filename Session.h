@@ -10,6 +10,7 @@ class Session {
     static int uniqueID;
     int id;
     bool isClosed;
+    std::string name;
     std::string prompt;
     int sessionFD;
     std::queue<std::string> linesIn;
@@ -38,6 +39,9 @@ class Session {
 
     bool getIsClosed();
     bool getIsDone();
+
+    std::string getName();
+    void setName(std::string name);
 
     void setPrompt(std::string);
     std::string getPrompt();

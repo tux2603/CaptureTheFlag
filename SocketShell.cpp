@@ -30,8 +30,11 @@ SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt)
   address.sin_addr.s_addr = INADDR_ANY;
   address.sin_port = htons(port);
 
+  // Not strictly necessary, but keeps the vscode syntax coloring happy
+  struct sockaddr *addrPointer =  (struct sockaddr*)&address;
+
   // Bind the socket
-  if (bind(socketFD, (struct sockaddr *)&address, sizeof(address)) < 0)
+  if (bind(socketFD, addrPointer, sizeof(address)) < 0) 
     throw "Could not bind socket to port " + to_string(port);
 
   // Start listening on the socket
@@ -66,6 +69,10 @@ SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt)
 set<Session *> SocketShell::getSessions()
 {
   return scheduler.getSessions();
+}
+
+Session *SocketShell::getSessionByID(int id) {
+  return scheduler.getSessionByID(id);
 }
 
 int SocketShell::getPort()
@@ -157,10 +164,68 @@ void SocketShell::update()
 
 int main()
 {
-  SocketShell *s1 = new SocketShell();
+  SocketShell s1;
 
-  s1->addCommand("wall", [](int argc, string argv[], SocketShell *shell, Session *callingSession) -> string {
-    string message = "\n" + to_string(callingSession->getID()) + ": ";
+  s1.addCommand("help", [](int argc, string argv[], SocketShell *shell, Session *callingSession) -> string {
+    string message = "The following commands are available: ";
+
+    set<string> commands = shell->listCommands();
+
+    for(string i : commands) {
+      message += i + " ";
+    }
+
+    if(argc >= 5 && !argv[1].compare("help") && !argv[2].compare("help") && !argv[3].compare("help") && !argv[4].compare("help")) {
+      message = "\nA friendly message from the local cow:\n";
+      message += " ________________________________ \n";
+      message += "< THERE SHALL BE NO HELP FOR YOU >\n";
+      message += " -------------------------------- \n";                                                            
+      message += "        \\   ^__^                  \n";                                                            
+      message += "         \\  (oo)\\_______          \n";                                                           
+      message += "            (__)\\       )\\/\      \n";  
+      message += "                ||----w |           \n";
+      message += "                ||     ||           \n";
+    }
+
+    return message;
+  });
+
+  s1.addCommand("setName", [](int argc, string argv[], SocketShell *shell, Session *callingSession) -> string {
+    string name = "";
+
+    for(int i = 1; i < argc; i++) {
+      name += argv[i];
+      if(i < argc - 1) name += " ";
+    }
+
+    callingSession->setName(name);
+
+    return "Name has been set to `" + name + "'";
+  });
+
+   s1.addCommand("setPrompt", [](int argc, string argv[], SocketShell *shell, Session *callingSession) -> string {
+    
+    string prompt = "";
+
+    for( int i = 1; i < argc; i++) {
+      prompt += argv[i] + " ";
+    }
+    
+    callingSession->setPrompt(prompt);
+
+    return "";
+  });
+
+  s1.addCommand("wall", [](int argc, string argv[], SocketShell *shell, Session *callingSession) -> string {
+    string message = "\n";
+
+    if(callingSession->getName().length() > 0) {
+      message += callingSession->getName() + " (" + to_string(callingSession->getID()) + "): ";
+    }
+
+    else {
+      message += to_string(callingSession->getID()) + ": ";
+    }
 
     for (int i = 1; i < argc; i++)
     {
@@ -180,11 +245,42 @@ int main()
     return "";
   });
 
+  s1.addCommand("write", [](int argc, string argv[], SocketShell *shell, Session *callingSession) -> string {
+
+    if(argc < 2) {
+      return "write requires at least one argument\n";
+    }
+
+    if(shell->getSessionByID(atoi(argv[1].c_str())) == NULL) {
+      return "No user found with id " + argv[1];
+    }
+
+    string message = "\n";
+
+    if(callingSession->getName().length() > 0) {
+      message += callingSession->getName() + " (" + to_string(callingSession->getID()) + "): ";
+    }
+
+    else {
+      message += to_string(callingSession->getID()) + ": ";
+    }
+
+    for (int i = 1; i < argc; i++)
+    {
+      message += argv[i] + " ";
+    }
+
+    shell->getSessionByID(atoi(argv[1].c_str()))->sendMessage(message);
+    shell->getSessionByID(atoi(argv[1].c_str()));
+
+    return "";
+  });
+
   cout << "SocketShell up and running, and waiting for connections." << endl;
 
   while (true)
   {
-    s1->update();
+    s1.update();
   }
 
   return 0;

@@ -1,15 +1,20 @@
 #include <cstring>
 #include <ctime>
+#include <functional>
 #include <iostream>
+#include "Session.h"
 #include "SocketShell.h"
 
 using namespace std;
 
+string callARealFunction(int argc, string argv[], SocketShell *shell, Session *callingSession);
+
 int port = 8042;
 string globalString = "Original value!";
 
-int main(int argc, char **argv) {
 
+
+int main(int argc, char **argv) {
   // If there are command line arguments to be parsed, then parse them
   if(argc > 0) {
     for(int i = 0; i < argc; i++) {
@@ -57,9 +62,15 @@ int main(int argc, char **argv) {
     return "setGlobal requires 1 argument"; 
   });
 
+  gameShell.addCommand("callARealFunction", callARealFunction);
+
   while(true) {
     gameShell.update();
   }
 
   return 0;
+}
+
+string callARealFunction(int argc, string argv[], SocketShell *shell, Session *callingSession) {
+  return "This is a real function, not one of those fancy lambda thingies";
 }

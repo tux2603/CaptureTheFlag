@@ -75,7 +75,7 @@ int main() {
   assert(m1.getTerrainAt(0,0) == TerrainType::Field);
   assert(m1.getTerrainAt(14, 14) == TerrainType::Field);
   assert(m1.getTerrainAt(0, 14) == TerrainType::Prison);
-  assert(m1.getTerrainAt(7,3) == TerrainType::Stream);
+  assert(m1.getTerrainAt(7,3) == TerrainType::Border);
   assert(m1.getTerrainAt(-1, -1) == TerrainType::TerraIncognita);
 
   assert(m1.getTerritoryAt(0, 0) == 0);
@@ -86,18 +86,19 @@ int main() {
 
   cout << m1.ansi() << endl;
 
-  int m2Width = 90;
-  int m2Height = 45;
+  int m2Width = 60;
+  int m2Height = 60;
+  int m2Teams = 2;
 
-  Map m2(m2Width, m2Height, 2);
+  Map m2(m2Width, m2Height, m2Teams);
 
-  PolygonMapGenerator gen(0.01, 0.05);
+  PolygonMapGenerator gen(0.01, 0.05, 0);
 
   gen.fillMap(m2);
 
   assert(m2.getWidth() == m2Width);
   assert(m2.getHeight() == m2Height);
-  assert(m2.getNumTeams() == 2);
+  assert(m2.getNumTeams() == m2Teams);
 
   cout << m2.ansi() << endl;
 

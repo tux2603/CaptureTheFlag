@@ -52,8 +52,8 @@ string terrainToANSI(TerrainType t)
   case TerrainType::Water:
     return "\033[37;44m";
 
-  case TerrainType::Stream:
-    return "\033[30;48;2;0;255;255m";
+  case TerrainType::Border:
+    return "\033[30;47m";
 
   case TerrainType::Path:
     return "\033[30;48;2;170;170;127m";
@@ -116,7 +116,7 @@ Map::Map() : width(15), height(15), numTeams(2)
       else if (x == width / 2)
       {
         territoryMask[y][x] = -1;
-        tiles[y][x] = TerrainType::Stream;
+        tiles[y][x] = TerrainType::Border;
       }
       else
       {
@@ -124,16 +124,6 @@ Map::Map() : width(15), height(15), numTeams(2)
       }
     }
   }
-
-  // tiles[6][0] = TerrainType::TerraIncognita;
-  // tiles[6][1] = TerrainType::Field;
-  // tiles[6][2] = TerrainType::Forest;
-  // tiles[6][3] = TerrainType::Hills;
-  // tiles[6][4] = TerrainType::Brambles;
-  // tiles[6][5] = TerrainType::Water;
-  // tiles[6][6] = TerrainType::Stream;
-  // tiles[6][7] = TerrainType::Path;
-  // tiles[6][8] = TerrainType::Prison;
 
   tiles[0][width - 1] = TerrainType::Prison;
   tiles[height - 1][0] = TerrainType::Prison;
@@ -201,7 +191,7 @@ int Map::getTerritoryAt(int x, int y)
     - Light Green   - Hills
     - Dark Green    - Forest
     - Brown         - Brambles
-    - Light Blue    - Stream
+    - Gray          - Border
     - Dark Blue     - Water
     - Tan           - Path
     - Red           - Prison

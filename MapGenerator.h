@@ -4,7 +4,24 @@
 #include <vector>
 #include "GameComponents.h"
 
+class TerritoryAllocationCell {
+  private:
+    int numTeams;
+  public: 
+    static const int NO_OWNER;
+    static const int DISPUTED;
+    static const long MIN_CLAIM_TO_OWN;
+    long *claims;
+    TerrainType terrain;
 
+    TerritoryAllocationCell();
+    TerritoryAllocationCell(const TerritoryAllocationCell& toCopy);
+    
+    TerritoryAllocationCell(int numTeams, TerrainType terrain);
+
+    int getOwner();
+    int resolveDisputes();
+};
 
 class MapGenerator {
   public:
@@ -37,9 +54,9 @@ class PolygonMapGenerator: public MapGenerator {
     
 
     
-    double startPolygonRatio, endPolygonRatio;
+    double startPolygonRatio, endPolygonRatio, waterRatio;
     PolygonMapGenerator();
-    PolygonMapGenerator(double startPolygonRatio, double endPolygonRatio);
+    PolygonMapGenerator(double startPolygonRatio, double endPolygonRatio, double waterRatio);
     PolygonMapGenerator(const PolygonMapGenerator& toCopy);
     void fillRawMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams);
 };

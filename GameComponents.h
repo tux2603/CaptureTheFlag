@@ -43,7 +43,7 @@ enum TerrainType {
   Hills,    // Increases visibility 
   Brambles, // Decreases mobility
   Water,    // Impassible
-  Stream,   // Boundary between territories
+  Border,   // Boundary between territories
   Path,     // Increases mobility
   Prison    // Can only leave if in your own territory, or if a 
             //  teammate is standing in an adjacent cell
@@ -122,7 +122,7 @@ class Map {
 
   public:
     /**
-     * Creates a 15x15 map of field with a stream running from top to bottom in the center
+     * Creates a 15x15 map of field with a Border running from top to bottom in the center
      * Prisons are located in the upper left and lower right hand corners
      */
     Map();

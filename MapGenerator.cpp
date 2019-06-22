@@ -8,9 +8,9 @@
 
 using namespace std;
 
-#define DEBUG
+//#define DEBUG
 //#define RESET_PRINT_HEAD
-#define SLOW
+//#define SLOW
 
 const int TerritoryAllocationCell::NO_OWNER = -1;
 const int TerritoryAllocationCell::DISPUTED = -2;
@@ -24,12 +24,12 @@ TerritoryAllocationCell::TerritoryAllocationCell(int numTeams, TerrainType terra
 }
 
 TerritoryAllocationCell::~TerritoryAllocationCell() {
-  cout << "\033[1;41m##### Deleting a territory cell " << claims << "! #####\033[0m" << endl;
+  // cout << "\033[1;41m##### Deleting a territory cell " << claims << "! #####\033[0m" << endl;
   delete [] claims;
 }
 
 int TerritoryAllocationCell::getOwner() {
-  cout << "Reading from " << claims << endl;
+  //cout << "Reading from " << claims << endl;
   int owner = NO_OWNER;
   for(int i = 0; i < numTeams; ++i) {
     if(claims[i] >= MIN_CLAIM_TO_OWN && owner == NO_OWNER) owner = i;
@@ -209,23 +209,23 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
 #endif //DEBUG
 
   // Create two arrays to store territory allocations
-  TerritoryAllocationCell **territoryCellsA = new TerritoryAllocationCell *[height];
-  TerritoryAllocationCell **territoryCellsB = new TerritoryAllocationCell *[height];
+  TerritoryAllocationCell ***territoryCellsA = new TerritoryAllocationCell **[height];
+  TerritoryAllocationCell ***territoryCellsB = new TerritoryAllocationCell **[height];
 
   // Initialize the values in the arrays
   for(int y = 0; y < height; ++y) {
-    territoryCellsA[y] = new TerritoryAllocationCell[width];
-    territoryCellsB[y] = new TerritoryAllocationCell[width];
+    territoryCellsA[y] = new TerritoryAllocationCell *[width];
+    territoryCellsB[y] = new TerritoryAllocationCell *[width];
 
     for(int x = 0; x < width; x++) {
-      territoryCellsA[y][x] = TerritoryAllocationCell(numTeams, tiles[y][x]);
-      territoryCellsB[y][x] = TerritoryAllocationCell(numTeams, tiles[y][x]);
+      territoryCellsA[y][x] = new TerritoryAllocationCell(numTeams, tiles[y][x]);
+      territoryCellsB[y][x] = new TerritoryAllocationCell(numTeams, tiles[y][x]);
     }
   }
 
   // Create two pointers to the territory arrays that will be used to alternate between successive generations
-  TerritoryAllocationCell ***currentTerritory = &territoryCellsA;
-  TerritoryAllocationCell ***nextTerritory = &territoryCellsB;
+  TerritoryAllocationCell ****currentTerritory = &territoryCellsA;
+  TerritoryAllocationCell ****nextTerritory = &territoryCellsB;
 
 
   // Thingies to generate random numbers
@@ -241,14 +241,14 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
     int randY = rY(g);
 
     // If that candidate location is already taken, get a new candidate
-    while((*currentTerritory)[randY][randX].getOwner() != TerritoryAllocationCell::NO_OWNER) {
+    while((*currentTerritory)[randY][randX]->getOwner() != TerritoryAllocationCell::NO_OWNER) {
       randX = rX(g);
       randY = rY(g);
     }
     
     // Once a suitable candidate is found, assign the owner at that location to be team i
-    (*currentTerritory)[randY][randX].claims[i] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
-    (*nextTerritory)[randY][randX].claims[i] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
+    (*currentTerritory)[randY][randX]->claims[i] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
+    (*nextTerritory)[randY][randX]->claims[i] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
 
     // Make this cell team i's prison
     tiles[randY][randX] = TerrainType::Prison;
@@ -274,12 +274,12 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
 # endif //RESET_PRINT_HEAD
     for(int y = height - 1; y >= 0; --y) {
       for (int x = 0; x < width; ++x) {
-        if((*currentTerritory)[y][x].getOwner() == TerritoryAllocationCell::DISPUTED)
+        if((*currentTerritory)[y][x]->getOwner() == TerritoryAllocationCell::DISPUTED)
           cout << terrainToANSI(TerrainType::Border) << "++\033[0m";
-        else if ((*currentTerritory)[y][x].getOwner() == TerritoryAllocationCell::NO_OWNER)
-          cout << terrainToANSI((*currentTerritory)[y][x].terrain) << "&&\033[0m";
+        else if ((*currentTerritory)[y][x]->getOwner() == TerritoryAllocationCell::NO_OWNER)
+          cout << terrainToANSI((*currentTerritory)[y][x]->terrain) << "&&\033[0m";
         else
-          cout << terrainToANSI((*currentTerritory)[y][x].terrain) << (char)((*currentTerritory)[y][x].getOwner() + 97) << " \033[0m";
+          cout << terrainToANSI((*currentTerritory)[y][x]->terrain) << (char)((*currentTerritory)[y][x]->getOwner() + 97) << " \033[0m";
       }
 
       cout << endl;
@@ -294,38 +294,38 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
       for(int y = 0; y < height; ++y) {
 
         // Get the owner of the cell
-        int cellOwner = (*currentTerritory)[y][x].getOwner();
+        int cellOwner = (*currentTerritory)[y][x]->getOwner();
         
         // If the cell doesn't have an owner, it doesn't have to spread claims
         if(cellOwner >= 0) {
 
           // Make sure that if a cell is owned by team x in this generation, it will also be owned by team x in the next generation
-          if((*nextTerritory)[y][x].claims[cellOwner] < TerritoryAllocationCell::MIN_CLAIM_TO_OWN) (*nextTerritory)[y][x].claims[cellOwner] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
+          if((*nextTerritory)[y][x]->claims[cellOwner] < TerritoryAllocationCell::MIN_CLAIM_TO_OWN) (*nextTerritory)[y][x]->claims[cellOwner] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
 
           // Get an array of the adjacent cells in this generation for reading from
           TerritoryAllocationCell **currentAdjacentCells = new TerritoryAllocationCell*[8];
           
-          currentAdjacentCells[0] = &(*currentTerritory)[(y+1)%height][(x+width-1)%width];
-          currentAdjacentCells[1] = &(*currentTerritory)[(y+1)%height][x];
-          currentAdjacentCells[2] = &(*currentTerritory)[(y+1)%height][(x+1)%width];
-          currentAdjacentCells[3] = &(*currentTerritory)[y][(x+1) % width];
-          currentAdjacentCells[4] = &(*currentTerritory)[y][(x+width-1)%width];
-          currentAdjacentCells[5] = &(*currentTerritory)[(y+height-1)%height][(x+width-1)%width];
-          currentAdjacentCells[6] = &(*currentTerritory)[(y+height-1)%height][x];
-          currentAdjacentCells[7] = &(*currentTerritory)[(y+height-1)%height][(x+1)%width];
+          currentAdjacentCells[0] = (*currentTerritory)[(y+1)%height][(x+width-1)%width];
+          currentAdjacentCells[1] = (*currentTerritory)[(y+1)%height][x];
+          currentAdjacentCells[2] = (*currentTerritory)[(y+1)%height][(x+1)%width];
+          currentAdjacentCells[3] = (*currentTerritory)[y][(x+1) % width];
+          currentAdjacentCells[4] = (*currentTerritory)[y][(x+width-1)%width];
+          currentAdjacentCells[5] = (*currentTerritory)[(y+height-1)%height][(x+width-1)%width];
+          currentAdjacentCells[6] = (*currentTerritory)[(y+height-1)%height][x];
+          currentAdjacentCells[7] = (*currentTerritory)[(y+height-1)%height][(x+1)%width];
           
 
           // Get an array of the adjacent cells in the next generation for writing to
           TerritoryAllocationCell **nextAdjacentCells = new TerritoryAllocationCell*[8];
 
-          nextAdjacentCells[0] = &(*nextTerritory)[(y+1)%height][(x+width-1)%width];
-          nextAdjacentCells[1] = &(*nextTerritory)[(y+1)%height][x];
-          nextAdjacentCells[2] = &(*nextTerritory)[(y+1)%height][(x+1)%width];
-          nextAdjacentCells[3] = &(*nextTerritory)[y][(x+1) % width];
-          nextAdjacentCells[4] = &(*nextTerritory)[y][(x+width-1)%width];
-          nextAdjacentCells[5] = &(*nextTerritory)[(y+height-1)%height][(x+width-1)%width];
-          nextAdjacentCells[6] = &(*nextTerritory)[(y+height-1)%height][x];
-          nextAdjacentCells[7] = &(*nextTerritory)[(y+height-1)%height][(x+1)%width];
+          nextAdjacentCells[0] = (*nextTerritory)[(y+1)%height][(x+width-1)%width];
+          nextAdjacentCells[1] = (*nextTerritory)[(y+1)%height][x];
+          nextAdjacentCells[2] = (*nextTerritory)[(y+1)%height][(x+1)%width];
+          nextAdjacentCells[3] = (*nextTerritory)[y][(x+1) % width];
+          nextAdjacentCells[4] = (*nextTerritory)[y][(x+width-1)%width];
+          nextAdjacentCells[5] = (*nextTerritory)[(y+height-1)%height][(x+width-1)%width];
+          nextAdjacentCells[6] = (*nextTerritory)[(y+height-1)%height][x];
+          nextAdjacentCells[7] = (*nextTerritory)[(y+height-1)%height][(x+1)%width];
           
 
           // Iterate over each of the adjacent cells to attempt to claim them
@@ -344,32 +344,35 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
 
               // If the cell is the same territory and unclaimed, then claim it particularly fast. This way, lines of claim will
               //  roughly follow the terrain
-              if(currentAdjacentCells[i]->terrain == (*currentTerritory)[y][x].terrain && adjacentCellOwner == TerritoryAllocationCell::NO_OWNER)
+              if(currentAdjacentCells[i]->terrain == (*currentTerritory)[y][x]->terrain && adjacentCellOwner == TerritoryAllocationCell::NO_OWNER)
                 nextAdjacentCells[i]->claims[cellOwner] += (long)(nextAdjacentCells[i]->claims[cellOwner] * 1.1);
 
               // If someone else ones the adjacent cell, dispute it
-              if(adjacentCellOwner >= 0 && adjacentCellOwner != cellOwner)
-                nextAdjacentCells[i]->claims[cellOwner] += (long)(nextAdjacentCells[i]->claims[cellOwner] * 4);
+              // if(adjacentCellOwner >= 0 && adjacentCellOwner != cellOwner)
+              //   nextAdjacentCells[i]->claims[cellOwner] += (long)(nextAdjacentCells[i]->claims[cellOwner] * 4);
 
               // make sure we haven't overflowed long
               if(currentAdjacentCells[i]->claims[cellOwner] < 0 ) nextAdjacentCells[i]->claims[cellOwner] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
 
             }
           }
+
+          delete [] currentAdjacentCells;
+          delete [] nextAdjacentCells;
         }
 
         // If the cell doesn't have an owner but is disputed, make sure that each team has an even claim on it
         // ! Is this the proper way to handle this?
         else if(cellOwner == TerritoryAllocationCell::DISPUTED) {
           for(int i = 0; i < numTeams; ++i) {
-            (*nextTerritory)[y][x].claims[i] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
+            (*nextTerritory)[y][x]->claims[i] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
           }
         }
       }
     }
 
     // Swap the next territory pointer and the current territory pointer for the next generation of the automaton
-    TerritoryAllocationCell ***temp = nextTerritory;
+    TerritoryAllocationCell ****temp = nextTerritory;
     nextTerritory = currentTerritory;
     currentTerritory = temp;
 
@@ -379,7 +382,7 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
     // Find the number of cells that nobody owns
     for(int x = 0; x < width; ++x) {
       for(int y = 0; y < height; y++) {
-        if((*currentTerritory)[y][x].getOwner() == TerritoryAllocationCell::NO_OWNER) ++unclaimdCells;
+        if((*currentTerritory)[y][x]->getOwner() == TerritoryAllocationCell::NO_OWNER) ++unclaimdCells;
       }
     }
 
@@ -393,19 +396,19 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
     for(int y = 0; y < height; ++y) {
 
       // If nobody owns the cell, it becomes water and no-mans land
-      if((*currentTerritory)[y][x].getOwner() == TerritoryAllocationCell::NO_OWNER) {
+      if((*currentTerritory)[y][x]->getOwner() == TerritoryAllocationCell::NO_OWNER) {
         tiles[y][x] = TerrainType::Water;
         territoryMask[y][x] = -1;
       }
 
       // If the cell is disputed, resolve the dispute in whatever team has the most claim over it
-      else if ((*currentTerritory)[y][x].getOwner() == TerritoryAllocationCell::DISPUTED){
-        territoryMask[y][x] = (*currentTerritory)[y][x].resolveDisputes();
+      else if ((*currentTerritory)[y][x]->getOwner() == TerritoryAllocationCell::DISPUTED){
+        territoryMask[y][x] = (*currentTerritory)[y][x]->resolveDisputes();
       }
 
       // In any other case, it's just a simple matter of copying numbers
       else {
-        territoryMask[y][x] = (*currentTerritory)[y][x].getOwner();
+        territoryMask[y][x] = (*currentTerritory)[y][x]->getOwner();
       }
     }
   }
@@ -414,11 +417,17 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
   cout << "Done with territory allocation cells" << endl;
 #endif
   // Release the memory used by the assignment variables
-  // for(int y = 0; y < height; y++) {
-  //   delete[] territoryCellsA[y];
-  //   delete[] territoryCellsB[y];
-  // }
+  for(int y = 0; y < height; y++) {
 
-  // delete[] territoryCellsA;
-  // delete[] territoryCellsB;
+    for(int x = 0; x < width; x++) {
+      delete territoryCellsA[y][x];
+      delete territoryCellsB[y][x];
+    }
+
+    delete[] territoryCellsA[y];
+    delete[] territoryCellsB[y];
+  }
+
+  delete[] territoryCellsA;
+  delete[] territoryCellsB;
 }

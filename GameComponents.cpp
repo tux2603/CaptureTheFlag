@@ -147,9 +147,12 @@ Map::Map(int width, int height, int numTeams) : width(width), height(height), nu
 Map::~Map()
 {
   // Release the memory for holding the map
-  for (int y = 0; y < height; y++)
+  for (int y = 0; y < height; y++) {
     delete[] tiles[y];
+    delete[] territoryMask[y];
+  }
   delete[] tiles;
+  delete[] territoryMask;
 }
 
 int Map::getWidth()

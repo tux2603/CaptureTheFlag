@@ -86,13 +86,13 @@ int main() {
 
   cout << m1.ansi() << endl;
 
-  int m2Width = 4;
-  int m2Height = 4;
+  int m2Width = 30;
+  int m2Height = 30;
   int m2Teams = 2;
 
   Map m2(m2Width, m2Height, m2Teams);
 
-  PolygonMapGenerator gen(0.25, 0.5, 0.9);
+  PolygonMapGenerator gen(0.002, 0.01, 0.5);
 
   gen.fillMap(m2);
 

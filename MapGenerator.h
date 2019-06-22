@@ -15,9 +15,10 @@ class TerritoryAllocationCell {
     TerrainType terrain;
 
     TerritoryAllocationCell();
-    TerritoryAllocationCell(const TerritoryAllocationCell& toCopy);
+    TerritoryAllocationCell(const TerritoryAllocationCell& toCopy) = delete;
     
     TerritoryAllocationCell(int numTeams, TerrainType terrain);
+    ~TerritoryAllocationCell();
 
     int getOwner();
     int resolveDisputes();

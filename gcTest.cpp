@@ -29,13 +29,15 @@ int main() {
   cout << " +++++ BEGIN PLAYER TESTING +++++ " << endl;
 
   Player p1;
-  Player p2(1, 2);
+  Player p2(1, 2, 1);
 
   // Test proper initialization of location values
   assert(p1.getX() == 0);
   assert(p1.getY() == 0);
+  assert(p1.getTeam() == -1);
   assert(p2.getX() == 1);
   assert(p2.getY() == 2);
+  assert(p2.getTeam() == 1);
   
   // Test for reassignment of location values
   p1.setX(5);
@@ -68,6 +70,9 @@ int main() {
   assert(p2.getX() == -1);
   assert(p2.getY() == 2);
 
+  p2.setTeam(0);
+  assert(p2.getTeam() == 0);
+
   cout << " +++++ BEGIN MAP TESTING +++++ " << endl;
 
   Map m1;
@@ -92,7 +97,7 @@ int main() {
 
   Map m2(m2Width, m2Height, m2Teams);
 
-  PolygonMapGenerator gen(0.002, 0.01, 0.5);
+  PolygonMapGenerator gen(0.01, 0.05, 0.5);
 
   gen.fillMap(m2);
 

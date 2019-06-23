@@ -70,8 +70,12 @@ string terrainToANSI(TerrainType t)
 // #####                  BEGIN PLAYER IMPLEMENTATIONS                   #####
 // ###########################################################################
 
-Player::Player() : Player::Player(0, 0) {}
-Player::Player(int x, int y) : x(x), y(y) {}
+Player::Player() : Player::Player(0, 0, -1) {}
+Player::Player(int x, int y) : Player::Player(x, y, -1) {}
+Player::Player(int x, int y, int team) : x(x), y(y), team(team) {}
+
+int Player::getTeam() { return team; }
+void Player::setTeam(int team) { this->team = team; }
 
 int Player::getX() { return x; }
 void Player::setX(int x) { this->x = x; }

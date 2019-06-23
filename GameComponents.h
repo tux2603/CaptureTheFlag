@@ -76,7 +76,7 @@ std::string terrainToANSI(TerrainType t);
 // Player class keeps track of an individual player. For now, all this means is keeping an eye on where they are
 class Player {
   private:
-    int x, y;
+    int x, y, team;
   public:
     /**
      * Creates a new player object at location (0, 0)
@@ -84,12 +84,25 @@ class Player {
     Player();
 
     /**
-     * Creates a new player object at location (x, y)
+     * Creates a new player object at location (x, y) that belongs to no team
      * @param x Integer value for the x coordinate that the player should be initialized at
      * @param y Integer value for the y coordinate that the player should be initialized at
      */
     Player(int x, int y);
+
+    /**
+     * Creates a new player object at location (x, y) belonging to team (team)
+     * @param x Integer value for the x coordinate that the player should be initialized at
+     * @param y Integer value for the y coordinate that the player should be initialized at
+     */
+    Player(int x, int y, int team);
     
+    /// Gets the team that the player belongs to
+    int getTeam();
+
+    /// Sets the team that the player belongs to
+    void setTeam(int team);
+
     /// Gets the player's x coordinate
     int getX();
 

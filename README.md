@@ -16,19 +16,32 @@ The capture the flag program will work by starting a "referee" program listening
 # Building/Compiling
 
 This should simply be a matter of running `make` in the project directory. Currently, this builds a 
-  test bed called `socketshell` that will start a simplified version of the referee program that will
-  listen on port 8042, log all requests that come in over the socket, and execute them. 
+  test bed called `gcTest` that will run some checks of various game objects and a referee program 
+  called `referee`.
 
-Currently, the following commands are available:
- - `help` - prints a list of all available commands
- - `setName [name]` - sets the nickname of the session to `name`. This will be displayed when messages
-  are sent to other sessions.
- - `setPrompt [prompt]` - sets the prompt that will be displayed in the terminal. This is mostly useful
-  for when humans would be using the session in a terminal.
- - `wall [message]` - send `[message]` to all connected sessions
- - `write [integer] [message]` - send `[message]` to the session with id `[integer]`
+# `referee` Program
 
-So far, this has only been tested on a system running Linux Mint 19 and a virtual machine running Lubuntu 19.04. Most Linux distros and
-  Mac _should_ work, but Windows<sup>™©®☣§℠℗</sup> is not guaranteed to work, since various UNIX system calls are used.
+## Command Line Arguments
 
+ - `-p` Sets the port that the referee will listen for connections on. __Default:__ 8042
+ - `-t` Sets the number of teams in the game. __Default:__ 2
 
+## Player Commands
+
+The commands that are available to be run by the players are as follows. Commands that
+  require a player to be signed in are marked by a star (*).
+
+ - *`getLocation` Gets the x/y coordinates of the player. Ability to select output formatting (eg, tuple, JSON, plain text) will 
+    be added at a later date
+ - `help` Prints a list of available commands
+ - *`joinTeam [team number | team name]` Joins a specified team. If one integer argument is given, the referee will try to 
+    add the player to that team. Else, the referee will try to add the player to a team whose name is all of the arguments 
+    concatenated together. A maximum number of players per team will be enforced at a later date.
+ - `listPlayers` Gets a list of the ID, nicknames, and team of every player that is currently signed in.
+ - `listTeams` Gets a list of the ID and name of all teams in the game.
+ - *`move [direction]` Moves the player in the specified direction, if allowed. Available directions are north, south, east,
+    west, up, down, right, and left. The initial letter of each of these options is also understood.
+ - `setNickname` Sets the nickname of the player as it will be displayed to other players. Filtering of names will be
+    added at a later date.
+ - `signIn` Signs the player in. A maximum number of players will be enforced at a later date.
+ - *`signOut` Signs the player out.

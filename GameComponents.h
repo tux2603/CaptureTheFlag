@@ -4,13 +4,14 @@
 
 #include <string>
 
-// ! IMPORTANT
+// ! IMPORTANT !
 // Directions and corresponding changes in coordinates correspond to real-life 
 //  longitude/latitude coordinates, not the typical computer screen reversed-y 
 //  coordinate system. North being up is sort of hardwired into humans minds 
 //  from looking at maps, so I decided to keep north up, and have up be an 
 //  increase in y coordinate, like it would in actual navigation.
 // Apologies to all programmers that this might throw off.
+// ? Do I really want to do it this way ?
 enum Direction {
   // North is equivalent to an increase in y coordinate
   North = 0b0001, Up = 0b0001,
@@ -28,7 +29,9 @@ enum Direction {
   NorthWest = 0b1001,
   NorthEast = 0b0101,
   SouthWest = 0b1010,
-  SouthEast = 0b0110
+  SouthEast = 0b0110,
+
+  None = 0b0000
 };
 
 /*

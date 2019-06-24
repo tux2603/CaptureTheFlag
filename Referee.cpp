@@ -8,12 +8,17 @@
 #include "Session.h"
 #include "SocketShell.h"
 
+#define MUST_SIGN_IN "You must be signed in to access that feature"
+
 using namespace std;
 
 string joinArray(string[], int, int);
 
+string getPlayerLocation(int , string[], SocketShell*, Session*);
+string listCommands(int, string[], SocketShell*, Session*);
 string listPlayers(int, string[], SocketShell*, Session*);
 string listTeams(int, string[], SocketShell*, Session*);
+string movePlayer(int, string[], SocketShell*, Session*);
 string playerSignIn(int, string[], SocketShell*, Session*);
 string playerSignOut(int, string[], SocketShell*, Session*);
 string setPlayerNickname(int, string[], SocketShell*, Session*);
@@ -45,9 +50,12 @@ int main(int argc, char **argv) {
 
   SocketShell gameShell(port);
 
+  gameShell.addCommand("getLocation", getPlayerLocation);
+  gameShell.addCommand("help", listCommands);
   gameShell.addCommand("joinTeam", setPlayerTeam);
   gameShell.addCommand("listPlayers", listPlayers);
   gameShell.addCommand("listTeams", listTeams);
+  gameShell.addCommand("move", movePlayer);
   gameShell.addCommand("setNickname", setPlayerNickname);
   gameShell.addCommand("signIn", playerSignIn);
   gameShell.addCommand("signOut", playerSignOut);
@@ -73,17 +81,57 @@ string joinArray(string sections[], int start, int end) {
   return joined;
 }
 
-string listTeams(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
-  string teamList = "";
+/// One line comment... \\\
+  on two lines!!!
 
-  for(int i = 0; i < numTeams; ++i) {
-    // TODO Team alias names...
-    teamList += "Team " + to_string(i) + ":  ";
-    if(teamNames[i] != "") teamList += teamNames[i] + "\n";
-    else teamList += "<NO NAME YET>\n";
+
+// ###########################################################################
+// #####                   GAME SHELL COMMAND FUNCTIONS                  #####
+// ###########################################################################
+
+string getPlayerLocation(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
+  // First check to make sure that the player is logged in
+  if(players.count(playerSession->getID()) > 0) {
+
+    // If no arguments were given
+    if (argc == 1) {
+      Player *p = players[playerSession->getID()];
+      return to_string(p->getX()) + " " + to_string(p->getY());
+    }
+
+    // If an argument was given... we don't know about it!
+    else {
+      return "Unknown option " + argv[1];
+    }
+  }
+  
+  else {
+    return MUST_SIGN_IN;
+  }
+}
+
+string listCommands(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
+  string message = "The following commands are available: ";
+
+  set<string> commands = gameShell->listCommands();
+
+  for(string i : commands) {
+    message += i + " ";
   }
 
-  return teamList;
+  if(argc >= 5 && !argv[1].compare("help") && !argv[2].compare("help") && !argv[3].compare("help") && !argv[4].compare("help")) {
+    message = "\nA friendly message from the local neighborhood cow:\n";
+    message += " _________________\n";
+    message += "< Enough of that! >\n";
+    message += " ----------------- \n";                                                            
+    message += "        \\   ^__^                  \n";                                                            
+    message += "         \\  (oo)\\_______          \n";                                                           
+    message += "            (__)\\       )\\/\\      \n";  
+    message += "                ||----w |           \n";
+    message += "                ||     ||           \n";
+  }
+
+  return message;
 }
 
 string listPlayers(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
@@ -111,6 +159,53 @@ string listPlayers(int argc, string argv[], SocketShell *gameShell, Session *pla
   return playersList;
 }
 
+string listTeams(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
+  string teamList = "";
+
+  for(int i = 0; i < numTeams; ++i) {
+    // TODO Team alias names...
+    teamList += "Team " + to_string(i) + ":  ";
+    if(teamNames[i] != "") teamList += teamNames[i] + "\n";
+    else teamList += "<NO NAME YET>\n";
+  }
+
+  return teamList;
+}
+
+string movePlayer(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
+  if (players.count(playerSession->getID()) == 0) {
+    return MUST_SIGN_IN;
+  }
+
+  else if(argc == 1) {
+    return "You must specify a direction in which to move";
+  }
+
+  // TODO Incur movement cost and check that you can move in that direction
+
+  else {
+    if(argv[1] == "north" || argv[1] == "n" || argv[1] == "up" || argv[1] == "u") {
+      players[playerSession->getID()]->move(Direction::North);
+    }
+
+    else if(argv[1] == "south" || argv[1] == "s" || argv[1] == "down" || argv[1] == "d") {
+      players[playerSession->getID()]->move(Direction::South);
+    }
+
+    else if(argv[1] == "east" || argv[1] == "e" || argv[1] == "right" || argv[1] == "r") {
+      players[playerSession->getID()]->move(Direction::East);
+    }
+
+    else if(argv[1] == "west" || argv[1] == "w" || argv[1] == "left" || argv[1] == "l") {
+      players[playerSession->getID()]->move(Direction::West);
+    }
+
+    else {
+      return "Unknown direction " + argv[1];
+    }
+  }
+}
+
 string playerSignIn(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
   cout << "A player on session " << playerSession->getID() << " is signing in" << endl;
 
@@ -122,11 +217,17 @@ string playerSignIn(int argc, string argv[], SocketShell *gameShell, Session *pl
 }
 
 string playerSignOut(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
-  cout << "The player on session " << playerSession->getID() << " is signing out" << endl;
+  if(players.count(playerSession->getID()) == 0) {
+    return MUST_SIGN_IN;
+  }
 
-  players.erase(playerSession->getID());
+  else {
+    cout << "The player on session " << playerSession->getID() << " is signing out" << endl;
 
-  return "You have signed out";
+    players.erase(playerSession->getID());
+
+    return "You have signed out";
+  }
 }
 
 string setPlayerNickname(int argc, string argv[], SocketShell *gameShell, Session *playerSession) {
@@ -155,7 +256,7 @@ string setPlayerTeam(int argc, string argv[], SocketShell *gameShell, Session *p
     // Check to make sure that that was a valid team number
     if (teamNum >= numTeams) return "The requested team does not exist. Type `listTeams' to get a list of teams.";
 
-    // If the team number passed all checks, assign it to the player that requesed it
+    // If the team number passed all checks, assign it to the player that requested it
     players[playerSession->getID()]->setTeam(teamNum);
   }
 
@@ -185,7 +286,7 @@ string setPlayerTeam(int argc, string argv[], SocketShell *gameShell, Session *p
         }
       }
 
-      // If there was an unamed team, name the team the requested name and then join it
+      // If there was an unnamed team, name the team the requested name and then join it
       if(teamNum >= 0) {
         cout << "Setting the name of team number " << teamNum << " to " << teamName << endl;
         teamNames[teamNum] = teamName;

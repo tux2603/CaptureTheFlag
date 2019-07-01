@@ -50,7 +50,7 @@ SocketShell::SocketShell(int port, string prompt) : port(port), prompt(prompt), 
 
   // Start a thread that will continually check for new connections
   sessionCheckThread = thread([](int socketFD, struct sockaddr *sockAddr, socklen_t *addrLen, Scheduler *scheduler, string defaultPrompt, atomic<bool> *shouldExit) {
-    cout << "Session checking thread started" << endl;
+    // cout << "Session checking thread started" << endl;
 
     while (!shouldExit->load())
     {
@@ -111,6 +111,8 @@ void SocketShell::addCommand(string name, function<string(int, string[], SocketS
 }
 
 set<string> SocketShell::listCommands() {
+  // Since this is stored internally as a map and wanted externally as a set, it will have to be converted
+  // ? As such, this is a rather expensive function. Maintain set with getters/setters?
   set<string> commandsSet = set<string>();
 
   for (pair<string, function<string(int, string[], SocketShell *, Session *)>> const& commandPair : commandDictionary) {

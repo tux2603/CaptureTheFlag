@@ -57,7 +57,7 @@ int TerritoryAllocationCell::resolveDisputes() {
   return owner;
 }
 
-void MapGenerator::fillMap(Map &map) {
+void MapGenerator::fillMap(TerrainMap &map) {
   this->fillRawMap(map.tiles, map.territoryMask, map.width, map.height, map.numTeams);
 }
 
@@ -300,7 +300,8 @@ void PolygonMapGenerator::fillRawMap(TerrainType **tiles, int **territoryMask, i
         if(cellOwner >= 0) {
 
           // Make sure that if a cell is owned by team x in this generation, it will also be owned by team x in the next generation
-          if((*nextTerritory)[y][x]->claims[cellOwner] < TerritoryAllocationCell::MIN_CLAIM_TO_OWN) (*nextTerritory)[y][x]->claims[cellOwner] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
+          if((*nextTerritory)[y][x]->claims[cellOwner] < TerritoryAllocationCell::MIN_CLAIM_TO_OWN) 
+            (*nextTerritory)[y][x]->claims[cellOwner] = TerritoryAllocationCell::MIN_CLAIM_TO_OWN;
 
           // Get an array of the adjacent cells in this generation for reading from
           TerritoryAllocationCell **currentAdjacentCells = new TerritoryAllocationCell*[8];

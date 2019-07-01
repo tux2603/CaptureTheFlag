@@ -75,7 +75,7 @@ int main() {
 
   cout << " +++++ BEGIN MAP TESTING +++++ " << endl;
 
-  Map m1;
+  TerrainMap m1;
 
   assert(m1.getTerrainAt(0,0) == TerrainType::Field);
   assert(m1.getTerrainAt(14, 14) == TerrainType::Field);
@@ -95,7 +95,7 @@ int main() {
   int m2Height = 30;
   int m2Teams = 2;
 
-  Map m2(m2Width, m2Height, m2Teams);
+  TerrainMap m2(m2Width, m2Height, m2Teams);
 
   PolygonMapGenerator gen(0.01, 0.05, 0.5);
 

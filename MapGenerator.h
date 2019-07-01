@@ -27,7 +27,7 @@ class TerritoryAllocationCell {
 class MapGenerator {
   public:
     virtual void fillRawMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams) = 0;
-    void fillMap(Map &map);
+    void fillMap(TerrainMap &map);
 };
 
 class BarMapGenerator: public MapGenerator{

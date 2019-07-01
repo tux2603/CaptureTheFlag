@@ -10,7 +10,6 @@ using namespace std;
 // #####                       GENERAL ALGORITHMS                        #####
 // ###########################################################################
 
-
 double getToroidalDistance(double x1, double y1, double x2, double y2, double width, double height)
 {
   double dx = x1 - x2;
@@ -29,6 +28,18 @@ double getToroidalDistance(double x1, double y1, double x2, double y2, double wi
   return sqrt(dx * dx + dy * dy);
 }
 
+/*
+  Utility function that gives an ANSI color code for each terrain type
+    - Black         - Terra Incognita
+    - Medium Green  - Field
+    - Light Green   - Hills
+    - Dark Green    - Forest
+    - Brown         - Brambles
+    - Gray          - Border
+    - Dark Blue     - Water
+    - Tan           - Path
+    - Red           - Prison
+*/
 string terrainToANSI(TerrainType t)
 {
   //Set map color according to the terrain
@@ -99,7 +110,7 @@ void Player::move(Direction direction)
 // #####                    BEGIN MAP IMPLEMENTATIONS                    #####
 // ###########################################################################
 
-Map::Map() : width(15), height(15), numTeams(2)
+TerrainMap::TerrainMap() : width(15), height(15), numTeams(2)
 {
   tiles = new TerrainType *[height];
   territoryMask = new int *[height];
@@ -133,9 +144,9 @@ Map::Map() : width(15), height(15), numTeams(2)
   tiles[height - 1][0] = TerrainType::Prison;
 }
 
-Map::Map(int width, int height) : Map::Map(width, height, 2) {}
+TerrainMap::TerrainMap(int width, int height) : TerrainMap::TerrainMap(width, height, 2) {}
 
-Map::Map(int width, int height, int numTeams) : width(width), height(height), numTeams(numTeams)
+TerrainMap::TerrainMap(int width, int height, int numTeams) : width(width), height(height), numTeams(numTeams)
 {
   // Allocate memory for the data arrays
   tiles = new TerrainType *[height];
@@ -148,10 +159,11 @@ Map::Map(int width, int height, int numTeams) : width(width), height(height), nu
   }
 }
 
-Map::~Map()
+TerrainMap::~TerrainMap()
 {
   // Release the memory for holding the map
-  for (int y = 0; y < height; y++) {
+  for (int y = 0; y < height; y++)
+  {
     delete[] tiles[y];
     delete[] territoryMask[y];
   }
@@ -159,22 +171,22 @@ Map::~Map()
   delete[] territoryMask;
 }
 
-int Map::getWidth()
+int TerrainMap::getWidth()
 {
   return width;
 }
 
-int Map::getHeight()
+int TerrainMap::getHeight()
 {
   return height;
 }
 
-int Map::getNumTeams()
+int TerrainMap::getNumTeams()
 {
   return numTeams;
 }
 
-TerrainType Map::getTerrainAt(int x, int y)
+TerrainType TerrainMap::getTerrainAt(int x, int y)
 {
   if (x < 0 || y < 0 || x >= width || y >= height)
     return TerrainType::TerraIncognita;
@@ -182,8 +194,8 @@ TerrainType Map::getTerrainAt(int x, int y)
     return tiles[y][x];
 }
 
-int Map::getTerritoryAt(int x, int y)
-{ 
+int TerrainMap::getTerritoryAt(int x, int y)
+{
   if (x < 0 || y < 0 || x >= width || y >= height)
     return -1;
   else
@@ -203,7 +215,7 @@ int Map::getTerritoryAt(int x, int y)
     - Tan           - Path
     - Red           - Prison
 */
-string Map::ansi()
+string TerrainMap::ansi()
 {
   string map = "";
 

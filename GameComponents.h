@@ -121,11 +121,11 @@ class Player {
     void move(Direction direction);
 };
 
-class Map {
+class TerrainMap {
   private:
     /// Fill a map with computer generated terrain
-    static void fillMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams);
-    static void fillMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams, GenerationAlgorithm alg);
+    //static void fillMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams);
+    //static void fillMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams, GenerationAlgorithm alg);
 
     int width, height, numTeams;
 
@@ -141,16 +141,16 @@ class Map {
      * Creates a 15x15 map of field with a Border running from top to bottom in the center
      * Prisons are located in the upper left and lower right hand corners
      */
-    Map();
+    TerrainMap();
 
     /**
      * Creates a randomly generated map of specified width and height and two teams
      */
-    Map(int width, int height);
+    TerrainMap(int width, int height);
 
-    Map(int width, int height, int numTeams);
+    TerrainMap(int width, int height, int numTeams);
 
-    ~Map();
+    ~TerrainMap();
 
     int getWidth();
     int getHeight();

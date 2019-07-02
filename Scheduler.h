@@ -49,6 +49,7 @@ private:
 
 public:
   Scheduler();
+  ~Scheduler();
 
   void addSession(Session *);
   

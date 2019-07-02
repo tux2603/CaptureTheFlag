@@ -1,13 +1,13 @@
 CXX=g++
 CXXFLAGS=-std=c++17
 
-all: socketshell
+all: referee gcTest# socketshell
 
-# sock: sock.cpp strutils.cpp strutils.h
-# 	$(CXX) -o sock sock.cpp strutils.cpp
+# socketshell: SocketShell.* Scheduler.* Session.* strutils.* 
+# 	$(CXX) -o $@ $^ -pthread
 
-# dummyshell: DummyShell.* strutils.*
-# 	$(CXX) -o dummyshell DummyShell.cpp strutils.cpp
-
-socketshell: SocketShell.* Scheduler.* Session.* strutils.* 
+referee: Referee.cpp SocketShell.cpp Scheduler.cpp Session.cpp strutils.cpp GameComponents.cpp MapGenerator.cpp
 	$(CXX) -o $@ $^ -pthread
+
+gcTest: gcTest.cpp GameComponents.cpp MapGenerator.cpp
+	$(CXX) -o $@ $^

@@ -115,12 +115,12 @@ TerrainMap::TerrainMap() : width(15), height(15), numTeams(2)
   tiles = new TerrainType *[height];
   territoryMask = new int *[height];
 
-  for (int y = 0; y < height; y++)
+  for (int y = 0; y < height; ++y)
   {
     tiles[y] = new TerrainType[width];
     territoryMask[y] = new int[width];
 
-    for (int x = 0; x < width; x++)
+    for (int x = 0; x < width; ++x)
     {
       tiles[y][x] = TerrainType::Field;
 
@@ -148,15 +148,42 @@ TerrainMap::TerrainMap(int width, int height) : TerrainMap::TerrainMap(width, he
 
 TerrainMap::TerrainMap(int width, int height, int numTeams) : width(width), height(height), numTeams(numTeams)
 {
+
+  cout << "Called three argument constructor for terrain map" << endl;
+
   // Allocate memory for the data arrays
   tiles = new TerrainType *[height];
   territoryMask = new int *[height];
 
-  for (int y = 0; y < height; y++)
+  for (int y = 0; y < height; ++y)
   {
     tiles[y] = new TerrainType[width];
     territoryMask[y] = new int[width];
   }
+}
+
+TerrainMap::TerrainMap(const TerrainMap &toCopy)
+{
+  width = toCopy.width;
+  height = toCopy.height;
+  numTeams = toCopy.numTeams;
+
+  tiles = new TerrainType *[height];
+  territoryMask = new int *[height];
+
+  for (int y = 0; y < height; ++y)
+  {
+    tiles[y] = new TerrainType[width];
+    territoryMask[y] = new int[width];
+
+    for (int x = 0; x < width; ++x)
+    {
+      tiles[y][x] = toCopy.tiles[y][x];
+      territoryMask[y][x] = territoryMask[y][x];
+    }
+  }
+
+  cout << "Called copy constructor for terrain map" << endl;
 }
 
 TerrainMap::~TerrainMap()
@@ -200,6 +227,40 @@ int TerrainMap::getTerritoryAt(int x, int y)
     return -1;
   else
     return territoryMask[y][x];
+}
+
+TerrainMap *TerrainMap::getViewFrom(int x, int y)
+{
+  int maxDistance = 4;
+
+  if (getTerrainAt(x, y) == TerrainType::Hills)
+    maxDistance = 6;
+  else if (getTerrainAt(x, y) == TerrainType::Forest)
+    maxDistance = 3;
+
+  TerrainMap *view = new TerrainMap(13, 13, numTeams);
+
+  for (int dy = -6; dy <= 6; ++dy)
+  {
+    for (int dx = -6; dx <= 6; ++dx)
+    {
+      double distance = sqrt(dx * dx + dy * dy);
+
+      if (distance > maxDistance || x + dx < 0 || x + dx > width - 1 || y + dy < 0 || y + dy > height - 1)
+      {
+        view->tiles[dy + 6][dx + 6] = TerrainType::TerraIncognita;
+        view->territoryMask[dy + 6][dx + 6] = -1;
+      }
+
+      else
+      {
+        view->tiles[dy + 6][dx + 6] = getTerrainAt(x + dx, y + dy);
+        view->territoryMask[dy + 6][dx + 6] = getTerritoryAt(x + dx, y + dy);
+      }
+    }
+  }
+
+  return view;
 }
 
 /*

@@ -125,7 +125,7 @@ class TerrainMap {
   private:
     /// Fill a map with computer generated terrain
     //static void fillMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams);
-    //static void fillMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams, GenerationAlgorithm alg);
+    //static void fillMap(TerrainType **tiles, int **territoryMask, int width, int height, int numTeams, GenerationAlgorithm algorithm);
 
     int width, height, numTeams;
 
@@ -144,11 +144,12 @@ class TerrainMap {
     TerrainMap();
 
     /**
-     * Creates a randomly generated map of specified width and height and two teams
+     * Creates an empty map of specified width and height and two teams
      */
     TerrainMap(int width, int height);
 
     TerrainMap(int width, int height, int numTeams);
+    TerrainMap(const TerrainMap &toCopy);
 
     ~TerrainMap();
 
@@ -159,6 +160,8 @@ class TerrainMap {
 
     TerrainType getTerrainAt(int x, int y);
     int getTerritoryAt(int x, int y);
+
+    TerrainMap *getViewFrom(int x, int y);
 
     // Returns a string with an ANSI-formatted representation of the map
     std::string ansi();

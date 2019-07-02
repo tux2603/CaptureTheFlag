@@ -24,6 +24,7 @@ string listCommands(int, string[], SocketShell *, Session *);
 string listPlayers(int, string[], SocketShell *, Session *);
 string listTeams(int, string[], SocketShell *, Session *);
 string movePlayer(int, string[], SocketShell *, Session *);
+string playerLook(int, string[], SocketShell *, Session *);
 string playerSignIn(int, string[], SocketShell *, Session *);
 string playerSignOut(int, string[], SocketShell *, Session *);
 string setPlayerNickname(int, string[], SocketShell *, Session *);
@@ -34,7 +35,7 @@ int numTeams = 2;
 
 int mapWidth = 24;
 int mapHeight = 24;
-TerrainMap *gameMap;
+TerrainMap gameMap = TerrainMap();
 
 /// Map from player session ID to player object, stores all players in this game
 map<int, Player *> players;
@@ -43,7 +44,7 @@ string *teamNames = new string[numTeams];
 int main(int argc, char **argv)
 {
   srand(time(0));
-  
+
   // If there are command line arguments to be parsed, then parse them
   if (argc > 0)
   {
@@ -77,20 +78,23 @@ int main(int argc, char **argv)
   gameShell.addCommand("joinTeam", setPlayerTeam);
   gameShell.addCommand("listPlayers", listPlayers);
   gameShell.addCommand("listTeams", listTeams);
+  gameShell.addCommand("look", playerLook);
   gameShell.addCommand("move", movePlayer);
   gameShell.addCommand("setNickname", setPlayerNickname);
   gameShell.addCommand("signIn", playerSignIn);
   gameShell.addCommand("signOut", playerSignOut);
 
   // Initialize the map with the parameters taken from the command prompt
-  gameMap = new TerrainMap(mapWidth, mapHeight, numTeams);
-  cout << "Created map" << endl;
+  TerrainMap newMap = TerrainMap(mapWidth, mapHeight, numTeams);
+  gameMap = newMap;
+  cout << "Created map. Width is " << gameMap.getWidth() << ", height is " << gameMap.getHeight() << endl;
   PolygonMapGenerator gen(0.01, 0.05, 0.01);
   cout << "Created terrain generator" << endl;
-  gen.fillMap(*gameMap);
+  gen.fillMap(gameMap);
   cout << "Filled map" << endl;
 
-  cout << "The game will be played on the map pictured below:\n" << gameMap->ansi() << endl;
+  cout << "The game will be played on the map pictured below:\n"
+       << gameMap.ansi() << endl;
 
   cout << "Server started on local port " << to_string(gameShell.getPort()) << endl;
 
@@ -292,6 +296,80 @@ string movePlayer(int argc, string argv[], SocketShell *gameShell, Session *play
       return "Unknown direction " + argv[1];
     }
   }
+}
+
+string playerLook(int argc, string argv[], SocketShell *gameShell, Session *playerSession)
+{
+  if (players.count(playerSession->getID()) == 0)
+    return MUST_SIGN_IN;
+
+  string viewString = "";
+
+  // TODO add ability to return info in different formats
+  TerrainMap *view = gameMap.getViewFrom(players[playerSession->getID()]->getX(), players[playerSession->getID()]->getY());
+
+  // By default, return the view in ANSI format
+  if (argc < 2 || argv[1] == "ansi")
+  {
+    viewString = "";
+
+    for (int y = view->getHeight() - 1; y >= 0; --y)
+    {
+      for (int x = 0; x < view->getWidth(); ++x)
+      {
+        int viewOffsetX = players[playerSession->getID()]->getX() - view->getWidth() / 2;
+        int viewOffsetY = players[playerSession->getID()]->getY() - view->getHeight() / 2;
+
+        char ownerChar = ' ';
+
+        if(view->getTerritoryAt(x, y) != players[playerSession->getID()]->getTeam())
+          ownerChar = (char)(view->getTerritoryAt(x, y) + 97);
+        
+
+        if (view->getTerrainAt(x, y) == TerrainType::TerraIncognita) {
+          if (y == view->getHeight() / 2 && x == view->getWidth() / 2)
+            ownerChar = '+';
+          else if (y == view->getHeight() / 2)
+            ownerChar = '-';
+          else if (x % 2 == 0 && x == view->getWidth() / 2)
+            ownerChar = '|'; 
+        }
+
+        char playerChar = ' ';
+
+        // TODO Check for location of other players!
+        for(const pair<int, Player*> i : players) {
+          if (i.first != playerSession->getID()) {
+            if(view->getTerrainAt(x, y) != TerrainType::TerraIncognita) {
+              if(i.second->getX() == x + viewOffsetX && i.second->getY() == y + viewOffsetY) {
+                if(i.second->getTeam() == players[playerSession->getID()]->getTeam())
+                  playerChar = '$';
+                else 
+                  playerChar = (char)(i.second->getTeam() + 65);
+              }
+            }
+          }
+        }
+
+        if(y == view->getHeight() / 2 && x == view->getWidth() / 2)
+          playerChar = '#';
+
+        viewString += terrainToANSI(view->getTerrainAt(x, y)) + ownerChar + playerChar;
+
+      }
+
+      viewString += "\n";
+    }
+  }
+
+  else
+  {
+    viewString = "Unrecognized format `" + argv[1] + "'";
+  }
+
+  delete view;
+
+  return viewString;
 }
 
 string playerSignIn(int argc, string argv[], SocketShell *gameShell, Session *playerSession)

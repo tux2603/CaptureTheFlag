@@ -167,6 +167,7 @@ class TerrainMap {
     std::string ansi();
 
     friend class MapGenerator;
+    friend class TerritoryAllocator;
 };
 
 #endif //GAME_COMPONENTS_H_BLOCK

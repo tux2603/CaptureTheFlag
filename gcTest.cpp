@@ -91,15 +91,17 @@ int main() {
 
   cout << m1.ansi() << endl;
 
-  int m2Width = 30;
-  int m2Height = 30;
-  int m2Teams = 2;
+  int m2Width = 180;
+  int m2Height = 90;
+  int m2Teams = 26;
 
   TerrainMap m2(m2Width, m2Height, m2Teams);
 
-  PolygonMapGenerator gen(0.01, 0.05, 0.5);
+  PolygonMapGenerator gen(0.002, 0.005);
+  SmartWedgeTerritoryAllocator ter(0);
 
   gen.fillMap(m2);
+  ter.fillMap(m2);
 
   assert(m2.getWidth() == m2Width);
   assert(m2.getHeight() == m2Height);

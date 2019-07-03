@@ -88,9 +88,11 @@ int main(int argc, char **argv)
   TerrainMap newMap = TerrainMap(mapWidth, mapHeight, numTeams);
   gameMap = newMap;
   cout << "Created map. Width is " << gameMap.getWidth() << ", height is " << gameMap.getHeight() << endl;
-  PolygonMapGenerator gen(0.01, 0.05, 0.01);
+  PolygonMapGenerator terrainGenerator(0.02, 0.1);
+  SmartWedgeTerritoryAllocator territoryAllocator(0.1);
   cout << "Created terrain generator" << endl;
-  gen.fillMap(gameMap);
+  terrainGenerator.fillMap(gameMap);
+  territoryAllocator.fillMap(gameMap);
   cout << "Filled map" << endl;
 
   cout << "The game will be played on the map pictured below:\n"
@@ -358,7 +360,7 @@ string playerLook(int argc, string argv[], SocketShell *gameShell, Session *play
 
       }
 
-      viewString += "\n";
+      viewString += "\033[0m\n";
     }
   }
 
